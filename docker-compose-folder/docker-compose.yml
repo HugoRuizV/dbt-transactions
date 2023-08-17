@@ -1,0 +1,62 @@
+# Docker compose file to orchestrate the three services: Postgres/ DBT/ Metabase 
+
+
+services:
+
+# DBT : built from the local docker file 
+# entry point with the DBT seed and DBT run commands to extract the data from the csv and run the models
+
+  dbt:
+      container_name: dbt
+      build: .
+      image: dbt
+      depends_on:
+        - db
+      volumes:
+        - ./:/usr/src/dbt
+      restart: "no"
+      entrypoint: [ "bash", "-c", "dbt seed --full-refresh && dbt run && dbt test" ]     
+
+# POSTGRES 
+# DEFINE A STANDARD USER AND POTGRES COUPLE 
+# MAP THE USUAL 5432 PORTS 
+# RUN THE CLASSIC HEALTHCHECKS
+
+  db:
+      container_name: postgres
+      image: postgres:15.2-alpine
+      restart: always
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      ports:
+        - 5432:5432
+      volumes: 
+        - db:/var/lib/postgresql/data
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+
+#METABSE 
+# SET UP OF A LOCAL METABASE ON PORT 3000 
+# SET UP OF A LOCAL FILE TO CONTAIN THE DATA on '/metabase-data' folder 
+
+  metabase:
+      image: metabase/metabase
+      environment:
+        - MB_DB_FILE=/metabase-data/metabase.db
+
+# MAPPED VOLUME TO USE THE SAVED METABASE DATA WHEN RESPINNING THE SERVICE 
+      volumes:
+         - ~/metabase-data:/metabase-data
+      ports:
+        - "3000:3000"
+
+volumes:
+  db:
+    driver: local
+
+
+

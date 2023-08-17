@@ -1,0 +1,33 @@
+# TESTS TO BE RUN : 
+# SIMPLE TESTS VIA VANILLA DBT TO CHECK COMPLETENESS
+# MORE COMPLEX TEST BY USING calogica/dbt_expectations to check the data type
+
+version: 2
+
+models:
+  - name: transactions
+    columns:
+      - name: account_no
+        tests:
+          - not_null
+      - name: date
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: timestamp without time zone
+      - name: transaction_details
+        tests:
+          - not_null
+      - name: withdrawal_amt
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+      - name: deposit_amt
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+      - name: balance_amt
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: double precision
+          - not_null

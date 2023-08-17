@@ -1,0 +1,18 @@
+## definition of the default connection profile to connect on the the local postgres 
+# we use host.docker.internal to access the postgres DB internally via the container 
+
+default:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: host.docker.internal
+      # for local tests
+      #host: localhost
+      user: postgres
+      password: postgres
+      port: 5432
+      dbname: postgres
+      schema: public
+      threads: 3
+      keepalives_idle: 0 # default 0, indicating the system default
